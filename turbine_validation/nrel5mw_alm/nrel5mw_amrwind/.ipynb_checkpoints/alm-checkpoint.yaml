@@ -1,0 +1,211 @@
+time.stop_time               =   200.0     # Max (simulated) time to evolve
+time.max_step                =   20000000         # Max number of time steps
+
+#time.fixed_dt         =   0.005      # Use this constant dt if > 0
+time.fixed_dt         =   0.002      # Use this constant dt if > 0
+time.cfl              =   0.95         # CFL factor
+
+io.KE_int = 0
+io.outputs = actuator_src_term
+time.plot_interval            =  5000       # Steps between plot files
+time.checkpoint_interval      =  5000       # Steps between checkpoint files
+
+ConstValue.density.value = 1.225
+ConstValue.velocity.value = 8.0 0.0 0.0
+
+incflo.use_godunov = 1
+incflo.godunov_type = "weno_z"
+#incflo.godunov_type = "ppm_nolim"
+incflo.do_initial_proj = 1
+incflo.initial_iterations = 3
+transport.viscosity = 1.0e-5
+transport.laminar_prandtl = 0.7
+transport.turbulent_prandtl = 0.3333
+#turbulence.model = Laminar
+turbulence.model               = Smagorinsky
+Smagorinsky_coeffs.Cs          = 0.08
+
+
+incflo.physics = FreeStream Actuator
+Actuator.labels = WTG01 
+
+Actuator.type = TurbineFastLine
+
+Actuator.TurbineFastLine.rotor_diameter = 130.0
+Actuator.TurbineFastLine.hub_height = 90.0
+Actuator.TurbineFastLine.num_points_blade = 300
+
+Actuator.TurbineFastLine.fllc = 0 
+
+Actuator.TurbineFastLine.num_points_tower = 0 
+Actuator.TurbineFastLine.epsilon_chord = 0.25 0.25 0.25
+Actuator.TurbineFastLine.epsilon_min = 0.213 0.213 0.213
+#Actuator.TurbineFastLine.epsilon = 8.0 8.0 8.0
+Actuator.TurbineFastLine.epsilon_tower = 5.0 5.0 5.0
+Actuator.TurbineFastLine.openfast_start_time = 0.0
+Actuator.TurbineFastLine.openfast_stop_time = 200.0
+Actuator.TurbineFastLine.nacelle_drag_coeff = 0.0
+Actuator.TurbineFastLine.nacelle_area = 0.0
+Actuator.TurbineFastLine.output_frequency = 10
+Actuator.TurbineFastLine.density = 1.225
+
+Actuator.WTG01.base_position = 5.0191 0. -90.0
+Actuator.WTG01.openfast_input_file = "turbine-NREL5MW-Land.fst"
+
+#Actuator.WTG02.base_position = 887.0191 0. -89.56256
+#Actuator.WTG02.openfast_input_file = "fast_inp2/nrel5mw.fst"
+
+ICNS.source_terms = ActuatorForcing
+
+
+#¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
+#               Domain                  #
+#.......................................#
+#amr.n_cell              = 128 64 64   # Grid cells at coarsest AMRlevel
+#amr.n_cell              = 32 16 16   # Grid cells at coarsest AMRlevel
+amr.n_cell              = 32 32 32   # Grid cells at coarsest AMRlevel
+#amr.n_cell              = 48 16 16   # Grid cells at coarsest AMRlevel
+#amr.n_cell              = 384 128 128   # Grid cells at coarsest AMRlevel
+#amr.n_cell              = 128 64 64   # Grid cells at coarsest AMRlevel
+#amr.n_cell              = 384 96 96   # Grid cells at coarsest AMRlevel
+#geometry.prob_lo        =   0 0 0
+#geometry.prob_hi        =   1920.0  500.0 500.0
+
+#geometry.prob_lo        =   -384.0 -384.0 -384.0
+#geometry.prob_hi        =   1920.0  384.0 384
+geometry.is_periodic    =   0   0   0   # Periodicity x y z (0/1)
+
+#geometry.prob_lo        =  -384 -512.0 -512.0
+#geometry.prob_hi        =  1664 512.0 512.0
+
+geometry.prob_lo        =  -1024 -1024.0 -1024.0
+geometry.prob_hi        =  1024 1024.0 1024.0
+
+#¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
+#        Mesh refinement                #
+#.......................................#
+amr.max_level           = 8           # Max AMR level in hierarchy
+#tagging.labels = refine0
+#tagging.refine0.type = GeometryRefinement
+#tagging.refine0.shapes = c0 c1 c2 c3 c4 c5 c6 c7
+
+tagging.labels = static
+tagging.static.type = CartBoxRefinement
+tagging.static.static_refinement_def = static_box.txt
+
+tagging.refine0.c0.type = cylinder
+tagging.refine0.c0.start =  -192.0 0.0 0.0
+tagging.refine0.c0.end =  1536.0 0.0 0.0
+tagging.refine0.c0.outer_radius = 140.8
+
+tagging.refine0.c1.type = cylinder
+tagging.refine0.c1.start =  -128.0 0.0 0.0
+tagging.refine0.c1.end =  1280.0 0.0 0.0
+tagging.refine0.c1.outer_radius = 128.0
+
+tagging.refine0.c2.type = cylinder
+tagging.refine0.c2.start =  -96.0 0.0 0.0
+tagging.refine0.c2.end =  1024 0.0 0.0
+tagging.refine0.c2.outer_radius = 96.0
+
+tagging.refine0.c3.type = cylinder
+tagging.refine0.c3.start =  -64.0 0.0 0.0
+tagging.refine0.c3.end =  64.0 0.0 0.0
+tagging.refine0.c3.outer_radius = 83.2
+
+tagging.refine0.c4.type = cylinder
+tagging.refine0.c4.start =  -38.4 0.0 0.0
+tagging.refine0.c4.end =  38.4 0.0 0.0
+tagging.refine0.c4.outer_radius = 76.8
+
+tagging.refine0.c5.type = cylinder
+tagging.refine0.c5.start =  -12.8 0.0 0.0
+tagging.refine0.c5.end =  12.8 0.0 0.0
+tagging.refine0.c5.outer_radius = 71.68
+
+tagging.refine0.c6.type = cylinder
+tagging.refine0.c6.start =  -6.4 0.0 0.0
+tagging.refine0.c6.end =  6.4 0.0 0.0
+tagging.refine0.c6.outer_radius = 67.84
+
+tagging.refine0.c7.type = cylinder
+tagging.refine0.c7.start =  -3.84 0.0 0.0
+tagging.refine0.c7.end =  3.84 0.0 0.0
+tagging.refine0.c7.outer_radius = 65.28
+
+
+# Boundary conditions
+xlo.type = "mass_inflow"
+xlo.density = 1.225
+xlo.velocity = 8.0 0.0 0.0
+xhi.type = "pressure_outflow"
+ylo.type =   "slip_wall"
+yhi.type =   "slip_wall"
+zlo.type =   "slip_wall"
+zhi.type =   "slip_wall"
+
+incflo.verbose          =   0          # incflo_level
+nodal_proj.verbose = 0
+
+nodal_proj.mg_rtol = 1.0e-6
+nodal_proj.mg_atol = 1.0e-12
+mac_proj.mg_rtol = 1.0e-6
+mac_proj.mg_atol = 1.0e-12
+
+#¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
+#              Sampling                 #
+#.......................................#
+incflo.post_processing = sampling
+
+# Frequency of output for the data
+sampling.output_frequency = 10
+sampling.labels = xy_plane xz_plane yz_plane1 yz_plane3 yz_plane5 yz_plane8
+
+# Fields to output
+sampling.fields = velocity
+
+# Definitions for each probe
+sampling.xy_plane.type = PlaneSampler
+sampling.xy_plane.axis2 = 0.0 350.0 0.0
+sampling.xy_plane.axis1 = 1800. 0.0 0.0
+sampling.xy_plane.origin = -126.0 -175.0 0.0
+sampling.xy_plane.num_points = 1280 128
+sampling.xy_plane.normal = 0.0 0.0 1.0
+
+sampling.xz_plane.type = PlaneSampler
+sampling.xz_plane.axis2 = 0.0 0.0 350.0
+sampling.xz_plane.axis1 = 1800. 0.0 0.0
+sampling.xz_plane.origin = -126.0 0.0 -175.0
+sampling.xz_plane.num_points = 1280 128
+sampling.xz_plane.normal = 0.0 0.0 1.0
+
+sampling.yz_plane1.type = PlaneSampler
+sampling.yz_plane1.axis2 = 0. 0.0 400.0
+sampling.yz_plane1.axis1 = 0.0 400.0 0.0
+sampling.yz_plane1.origin = 126.0 -200.0 -200.0
+sampling.yz_plane1.num_points = 128 128
+sampling.yz_plane1.normal = 1.0 0.0 0.0
+
+sampling.yz_plane3.type = PlaneSampler
+sampling.yz_plane3.axis2 = 0. 0.0 400.0
+sampling.yz_plane3.axis1 = 0.0 400.0 0.0
+sampling.yz_plane3.origin = 378.0 -200.0 -200.0
+sampling.yz_plane3.num_points = 128 128
+sampling.yz_plane3.normal = 1.0 0.0 0.0
+
+sampling.yz_plane5.type = PlaneSampler
+sampling.yz_plane5.axis2 = 0. 0.0 400.0
+sampling.yz_plane5.axis1 = 0.0 400.0 0.0
+sampling.yz_plane5.origin = 630.0 -200.0 -200.0
+sampling.yz_plane5.num_points = 128 128
+sampling.yz_plane5.normal = 1.0 0.0 0.0
+
+sampling.yz_plane8.type = PlaneSampler
+sampling.yz_plane8.axis2 = 0. 0.0 400.0
+sampling.yz_plane8.axis1 = 0.0 400.0 0.0
+sampling.yz_plane8.origin = 1008.0 -200.0 -200.0
+sampling.yz_plane8.num_points = 128 128
+sampling.yz_plane8.normal = 1.0 0.0 0.0
+
+
+
