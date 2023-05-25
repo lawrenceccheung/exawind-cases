@@ -1,0 +1,279 @@
+
+Simulations:
+
+- name: sim1
+  time_integrator: ti_1
+  optimizer: opt1
+
+linear_solvers:
+
+- name: solve_scalar
+  type: tpetra
+  method: gmres
+  preconditioner: sgs
+  tolerance: 1e-5
+  max_iterations: 50
+  kspace: 50
+  output_level: 0
+
+- name: solve_cont
+  type: tpetra
+  method: gmres
+  preconditioner: muelu
+  tolerance: 1e-5
+  max_iterations: 50
+  kspace: 50
+  output_level: 0
+  muelu_xml_file_name: ./milestone.xml
+  summarize_muelu_timer: no
+
+realms:
+
+- name: realm_1
+  mesh: ./refinedmesh.exo
+  use_edges: yes
+  automatic_decomposition_type: rcb
+
+  equation_systems:
+    name: theEqSys
+    max_iterations: 2
+
+    solver_system_specification:
+      velocity: solve_scalar
+      pressure: solve_cont
+      enthalpy: solve_scalar
+
+    systems:
+
+    - LowMachEOM:
+        name: myLowMach
+        max_iterations: 1
+        convergence_tolerance: 1.0e-5
+
+    - Enthalpy:
+        name: myEnth
+        max_iterations: 1
+        convergence_tolerance: 1.0e-5
+
+
+  initial_conditions:
+
+  - constant: ic_1
+    target_name: [fluid_part, fluid_part.pyramid_5._urpconv, fluid_part.tetrahedron_4._urpconv]
+    value:
+      pressure: 0.0
+      velocity:
+      - 8.0
+      - 0.0
+      - 0.0
+      temperature: 300.0
+
+  material_properties:
+    target_name: [fluid_part, fluid_part.pyramid_5._urpconv, fluid_part.tetrahedron_4._urpconv]
+
+    constant_specification:
+      universal_gas_constant: 8314.4621
+      reference_pressure: 88640.48  #101325.0
+
+    reference_quantities:
+    - species_name: Air
+      mw: 29.0
+      mass_fraction: 1.0
+
+    specifications:
+    - name: density
+      type: constant
+      value: 1.225
+
+    - name: viscosity
+      type: constant
+      value: 1.7824e-5
+
+    - name: specific_heat
+      type: constant
+      value: 1004.0
+
+  boundary_conditions:
+
+  - inflow_boundary_condition: bc_1
+    target_name: west
+    inflow_user_data:
+      velocity:
+      - 8.0
+      - 0.0
+      - 0.0
+      temperature: 300.0
+
+  - open_boundary_condition: bc_2
+    target_name: east
+    open_user_data:
+      pressure: 0.0
+      velocity:
+      - 8.0
+      - 0.0
+      - 0.0
+      temperature: 300.0
+
+  - periodic_boundary_condition: bc_n_s
+    target_name: [north, south]
+    periodic_user_data:
+      search_tolerance: 0.0001
+
+  - periodic_boundary_condition: bc_u_l
+    target_name: [upper, lower]
+    periodic_user_data:
+      search_tolerance: 0.0001
+
+  solution_options:
+    name: myOptions
+    turbulence_model: laminar
+
+    options:
+    - turbulence_model_constants:
+        kappa: 0.4
+        cEps: 0.93
+        cmuEps: 0.0673
+
+    - laminar_prandtl:
+        enthalpy: 0.7
+
+        # Turbulent Prandtl number is 1/3 following Moeng (1984).
+    - turbulent_prandtl:
+        enthalpy: 0.3333
+
+    - turbulent_schmidt:
+        turbulent_ke: 0.5
+
+    - user_constants:
+        reference_density: 1.225
+        reference_temperature: 300.0
+        gravity: [0.0, 0.0, -9.81]
+        thermal_expansion_coefficient: 3.37e-3
+        east_vector: [0.0, -1.0, 0.0]       #CHECK
+        north_vector: [1.0, 0.0, 0.0]
+        latitude: 33.6
+        earth_angular_velocity: 7.2921159e-5
+
+    - hybrid_factor:
+        velocity: 1.0
+
+    - limiter:
+        pressure: no
+        velocity: no
+
+    - projected_nodal_gradient:
+        pressure: element
+        velocity: element
+
+    - source_terms:
+        momentum:
+        - actuator
+
+  actuator:
+    type: ActDiskFASTNGP
+    search_method: stk_kdtree
+    search_target_part: [fluid_part, fluid_part.pyramid_5._urpconv, fluid_part.tetrahedron_4._urpconv]
+
+    n_turbines_glob: 1
+    dry_run: false
+    debug: false
+    simStart: init
+    t_start: 0.0
+    t_max: 100000.0
+    dt_fast: 0.005
+    n_every_checkpoint: 20000
+
+    Turbine0:
+      fllt_correction: false
+      num_force_pts_blade: 300
+      num_force_pts_tower: 20
+      nacelle_cd: 0.0
+      nacelle_area: 8.0
+      air_density: 1.225
+      epsilon:
+      - 3.0
+      - 3.0
+      - 3.0
+      turbine_base_pos: [0.0, 0.0, -90.0]
+      turbine_hub_pos: [0.0, 0.0, 0.0]
+      restart_filename: blah
+      fast_input_filename: OpenFAST/NREL-2p8-127.fst
+      turb_id: 1
+      turbine_name: machine_one
+
+
+  data_probes:
+    output_frequency: 100
+    output_format: text
+    search_method: stk_kdtree
+    search_tolerance: 1.0e-3
+    search_expansion_factor: 2.0
+    gzip_level: 1               # Optional, Default: 0
+    write_coords: false         # Optional, Default: true
+    time_performance: true
+
+
+    specifications:
+    - name: probe_surface
+      from_target_part: [fluid_part, fluid_part.pyramid_5._urpconv, fluid_part.tetrahedron_4._urpconv]
+
+      plane_specifications:
+
+      - name: sliceData/hhplane1/hhplane1
+        corner_coordinates: [-2560.0, -960.0, 0.0]
+        edge1_vector: [5120.0, 0.0, 0.0]
+        edge2_vector: [0.0, 1920.0, 0.0]
+        edge1_numPoints: 129
+        edge2_numPoints: 49
+
+      - name: sliceData/hhplane2/hhplane2
+        corner_coordinates: [-1160.0, -580.0, 0.0]
+        edge1_vector: [3480.0, 0.0, 0.0]
+        edge2_vector: [0.0, 1160.0, 0.0]
+        edge1_numPoints: 349
+        edge2_numPoints: 117
+
+      - name: sliceData/xzplane1/xzplane1
+        corner_coordinates: [-1160.0, 0.0, -320.0]
+        edge1_vector: [3480.0, 0.0, 0.0]
+        edge2_vector: [0.0, 0.0, 640.0]
+        edge1_numPoints: 349
+        edge2_numPoints: 65
+
+      output_variables:
+      - field_name: velocity
+        field_size: 3
+      - field_name: pressure
+        field_size: 1
+      - field_name: actuator_source
+        field_size: 1
+
+  output:
+    output_data_base_name: out/nrel-2p8_uniform6.e
+    output_frequency: 50
+    output_node_set: no
+    output_variables:
+    - velocity
+    - pressure
+    - actuator_source
+
+  restart:
+    restart_data_base_name: rst/nrel-2p8_uniform6.rst
+    restart_frequency: 25
+      #restart_start: 10
+    compression_level: 9
+    compression_shuffle: yes
+    max_data_base_step_size: 5
+
+Time_Integrators:
+- StandardTimeIntegrator:
+    name: ti_1
+    start_time: 0
+    termination_step_count: 3600
+    time_step: 0.002
+    time_stepping_type: fixed
+    time_step_count: 0
+    second_order_accuracy: no
+
+    realms:
+    - realm_1
