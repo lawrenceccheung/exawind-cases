@@ -126,13 +126,15 @@ realms:
 
   solution_options:
     name: myOptions
-    turbulence_model: laminar
+    turbulence_model: smagorinsky
 
     options:
     - turbulence_model_constants:
         kappa: 0.4
         cEps: 0.93
         cmuEps: 0.0673
+        #cmuCs: 0.135
+        cmuCs: 0.08
 
     - laminar_prandtl:
         enthalpy: 0.7
@@ -180,7 +182,7 @@ realms:
     simStart: init
     t_start: 0.0
     t_max: 100000.0
-    dt_fast: 0.005
+    dt_fast: 0.002
     n_every_checkpoint: 20000
 
     Turbine0:
@@ -190,14 +192,13 @@ realms:
       nacelle_cd: 0.0
       nacelle_area: 8.0
       air_density: 1.225
-      epsilon:
-      - 3.0
-      - 3.0
-      - 3.0
-      turbine_base_pos: [0.0, 0.0, -90.0]
-      turbine_hub_pos: [0.0, 0.0, 0.0]
+      #epsilon: [5.0, 5.0, 5.0]
+      epsilon_chord: [0.250, 0.250, 0.250]
+      epsilon_min: [0.2130, 0.213, 0.213]
+      turbine_base_pos: [5.0191, 0.0, -90.0]
+      turbine_hub_pos: [5.0191, 0.0, 0.0]
       restart_filename: blah
-      fast_input_filename: OpenFAST/NREL-2p8-127.fst
+      fast_input_filename: turbine-NREL5MW-Land.fst
       turb_id: 1
       turbine_name: machine_one
 
@@ -220,25 +221,11 @@ realms:
       plane_specifications:
 
       - name: sliceData/hhplane1/hhplane1
-        corner_coordinates: [-2560.0, -960.0, 0.0]
-        edge1_vector: [5120.0, 0.0, 0.0]
-        edge2_vector: [0.0, 1920.0, 0.0]
-        edge1_numPoints: 129
-        edge2_numPoints: 49
-
-      - name: sliceData/hhplane2/hhplane2
-        corner_coordinates: [-1160.0, -580.0, 0.0]
-        edge1_vector: [3480.0, 0.0, 0.0]
-        edge2_vector: [0.0, 1160.0, 0.0]
-        edge1_numPoints: 349
-        edge2_numPoints: 117
-
-      - name: sliceData/xzplane1/xzplane1
-        corner_coordinates: [-1160.0, 0.0, -320.0]
-        edge1_vector: [3480.0, 0.0, 0.0]
-        edge2_vector: [0.0, 0.0, 640.0]
-        edge1_numPoints: 349
-        edge2_numPoints: 65
+        corner_coordinates: [-1024.0, -1024.0, 0.0]
+        edge1_vector: [2048.0, 0.0, 0.0]
+        edge2_vector: [0.0, 2048.0, 0.0]
+        edge1_numPoints: 513
+        edge2_numPoints: 513
 
       output_variables:
       - field_name: velocity
@@ -259,17 +246,17 @@ realms:
 
   restart:
     restart_data_base_name: rst/nrel-2p8_uniform6.rst
-    restart_frequency: 25
+    restart_frequency: 10000
       #restart_start: 10
     compression_level: 9
     compression_shuffle: yes
-    max_data_base_step_size: 5
+    #max_data_base_step_size: 5
 
 Time_Integrators:
 - StandardTimeIntegrator:
     name: ti_1
     start_time: 0
-    termination_step_count: 3600
+    termination_step_count: 100000
     time_step: 0.002
     time_stepping_type: fixed
     time_step_count: 0
